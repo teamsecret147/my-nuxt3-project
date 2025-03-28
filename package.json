@@ -37,6 +37,7 @@
     "@nuxtjs/tailwindcss": "^6.13.2",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.13.14",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
@@ -46,6 +47,11 @@
     "prettier": "^3.5.3",
     "prisma": "^6.5.0",
     "sass": "^1.66.1",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.js"
   }
 }

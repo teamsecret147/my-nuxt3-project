@@ -1,186 +1,283 @@
 <template>
-  <div>
-    <!-- Top Bar -->
-    <div class="bg-blue-600 text-white py-2">
-      <div class="container mx-auto px-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center space-x-4">
-            <span>Hotline: 1900 1234</span>
-            <span>Email: support@batdongsan.com</span>
-          </div>
-          <div class="flex items-center space-x-4">
-            <template v-if="!isAuthenticated">
-              <NuxtLink to="/login" class="hover:text-blue-200">Đăng nhập</NuxtLink>
-              <NuxtLink to="/register" class="hover:text-blue-200">Đăng ký</NuxtLink>
-            </template>
-            <template v-else>
-              <div class="relative group">
-                <button class="hover:text-blue-200 flex items-center">
-                  {{ user?.name || 'Tài khoản' }}
-                  <span class="ml-1">▼</span>
-                </button>
-                <div
-                  class="absolute right-0 hidden group-hover:block w-48 bg-white shadow-lg rounded-lg mt-2 py-2 z-50"
-                >
-                  <NuxtLink to="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Thông tin cá nhân</NuxtLink
-                  >
-                  <NuxtLink
-                    to="/my-properties"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Tin đã đăng</NuxtLink
-                  >
-                  <NuxtLink to="/favorites" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Tin yêu thích</NuxtLink
-                  >
-                  <button
-                    class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
-                    @click="handleLogout"
-                  >
-                    Đăng xuất
-                  </button>
-                </div>
-              </div>
-            </template>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Header -->
-    <div class="bg-white shadow-md">
-      <div class="container mx-auto px-4 py-4">
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <nav class="container mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-8">
-            <NuxtLink to="/">
-              <img src="https://placehold.co/200x60" alt="Logo" class="h-12" />
+          <!-- Logo -->
+          <NuxtLink to="/" class="flex items-center space-x-2">
+            <span class="text-2xl font-bold text-blue-600">🏠</span>
+            <span class="text-xl font-semibold">BatDongSan</span>
+          </NuxtLink>
+
+          <!-- Navigation -->
+          <div class="hidden md:flex items-center space-x-6">
+            <NuxtLink to="/" class="text-gray-600 hover:text-gray-900 transition-colors">
+              Trang chủ
             </NuxtLink>
-            <div class="relative">
-              <input
-                type="text"
-                placeholder="Nhập từ khóa tìm kiếm..."
-                class="w-96 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              />
-              <button
-                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded"
-              >
-                Tìm kiếm
-              </button>
-            </div>
-          </div>
-          <div class="flex items-center space-x-4">
+            <NuxtLink to="/properties" class="text-gray-600 hover:text-gray-900 transition-colors">
+              Mua/Thuê
+            </NuxtLink>
             <NuxtLink
-              to="/post-property"
-              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              to="/properties/create"
+              class="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Đăng tin
             </NuxtLink>
-            <NuxtLink
-              to="/favorites"
-              class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200"
-            >
-              <span class="mr-2">❤️</span> Yêu thích
+            <NuxtLink to="/about" class="text-gray-600 hover:text-gray-900 transition-colors">
+              Giới thiệu
             </NuxtLink>
+            <NuxtLink to="/contact" class="text-gray-600 hover:text-gray-900 transition-colors">
+              Liên hệ
+            </NuxtLink>
+          </div>
+
+          <!-- User Menu -->
+          <div class="flex items-center space-x-4">
+            <button
+              v-if="!isAuthenticated"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              @click="navigateToLogin"
+            >
+              Đăng nhập
+            </button>
+            <div v-else v-click-outside="closeUserMenu" class="relative">
+              <button
+                class="flex items-center space-x-2 focus:outline-none"
+                @click="toggleUserMenu"
+              >
+                <img
+                  :src="user?.image || '/images/default-avatar.png'"
+                  alt="Avatar"
+                  class="w-8 h-8 rounded-full object-cover"
+                />
+                <span class="text-gray-700">{{ user?.name || 'User' }}</span>
+                <svg
+                  class="w-4 h-4 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              <!-- Dropdown Menu -->
+              <div
+                v-if="showUserMenu"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+              >
+                <NuxtLink to="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                  Tài khoản
+                </NuxtLink>
+                <NuxtLink
+                  to="/properties/my-listings"
+                  class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Tin đã đăng
+                </NuxtLink>
+                <NuxtLink to="/saved" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                  Tin đã lưu
+                </NuxtLink>
+                <hr class="my-2" />
+                <button
+                  class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  @click="handleLogout"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button
+              class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
+              @click="toggleMobileMenu"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  v-if="showMobileMenu"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+                <path
+                  v-else
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Navigation Menu -->
-    <div class="bg-white border-b">
+        <!-- Mobile Menu -->
+        <div v-if="showMobileMenu" class="md:hidden mt-4 border-t pt-4 space-y-4">
+          <NuxtLink to="/" class="block text-gray-600 hover:text-gray-900 transition-colors">
+            Trang chủ
+          </NuxtLink>
+          <NuxtLink
+            to="/properties"
+            class="block text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Mua/Thuê
+          </NuxtLink>
+          <NuxtLink
+            to="/properties/create"
+            class="block text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Đăng tin
+          </NuxtLink>
+          <NuxtLink to="/about" class="block text-gray-600 hover:text-gray-900 transition-colors">
+            Giới thiệu
+          </NuxtLink>
+          <NuxtLink to="/contact" class="block text-gray-600 hover:text-gray-900 transition-colors">
+            Liên hệ
+          </NuxtLink>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
       <div class="container mx-auto px-4">
-        <nav class="flex items-center space-x-8 py-3">
-          <NuxtLink to="/" class="text-blue-600 font-semibold">Trang chủ</NuxtLink>
-          <div class="relative group">
-            <NuxtLink
-              to="/properties/sale"
-              class="text-gray-600 hover:text-blue-600 flex items-center"
-            >
-              Nhà đất bán
-              <span class="ml-1">▼</span>
-            </NuxtLink>
-            <div
-              class="absolute hidden group-hover:block w-48 bg-white shadow-lg rounded-lg mt-2 py-2 z-50"
-            >
-              <NuxtLink
-                to="/properties/sale/house"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Nhà riêng</NuxtLink
-              >
-              <NuxtLink
-                to="/properties/sale/apartment"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Căn hộ chung cư</NuxtLink
-              >
-              <NuxtLink
-                to="/properties/sale/land"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Đất nền</NuxtLink
-              >
-              <NuxtLink
-                to="/properties/sale/commercial"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Văn phòng, mặt bằng</NuxtLink
-              >
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Về chúng tôi</h3>
+            <p class="text-gray-400">
+              BatDongSan - Nền tảng đăng tin bất động sản uy tín hàng đầu Việt Nam
+            </p>
           </div>
-          <div class="relative group">
-            <NuxtLink
-              to="/properties/rent"
-              class="text-gray-600 hover:text-blue-600 flex items-center"
-            >
-              Nhà đất cho thuê
-              <span class="ml-1">▼</span>
-            </NuxtLink>
-            <div
-              class="absolute hidden group-hover:block w-48 bg-white shadow-lg rounded-lg mt-2 py-2 z-50"
-            >
-              <NuxtLink
-                to="/properties/rent/house"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Nhà riêng</NuxtLink
-              >
-              <NuxtLink
-                to="/properties/rent/apartment"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Căn hộ chung cư</NuxtLink
-              >
-              <NuxtLink
-                to="/properties/rent/land"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Đất nền</NuxtLink
-              >
-              <NuxtLink
-                to="/properties/rent/commercial"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Văn phòng, mặt bằng</NuxtLink
-              >
-            </div>
-          </div>
-          <NuxtLink to="/projects" class="text-gray-600 hover:text-blue-600">Dự án</NuxtLink>
-          <NuxtLink to="/news" class="text-gray-600 hover:text-blue-600">Tin tức</NuxtLink>
-          <NuxtLink to="/feng-shui" class="text-gray-600 hover:text-blue-600">Phong thủy</NuxtLink>
-          <NuxtLink to="/consulting" class="text-gray-600 hover:text-blue-600">Tư vấn</NuxtLink>
-          <NuxtLink to="/price-list" class="text-gray-600 hover:text-blue-600">Bảng giá</NuxtLink>
-        </nav>
-      </div>
-    </div>
 
-    <!-- Page Content -->
-    <slot />
+          <!-- Quick Links -->
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Liên kết nhanh</h3>
+            <ul class="space-y-2">
+              <li>
+                <NuxtLink to="/properties" class="text-gray-400 hover:text-white transition-colors">
+                  Tìm bất động sản
+                </NuxtLink>
+              </li>
+              <li>
+                <NuxtLink
+                  to="/properties/create"
+                  class="text-gray-400 hover:text-white transition-colors"
+                >
+                  Đăng tin
+                </NuxtLink>
+              </li>
+              <li>
+                <NuxtLink to="/news" class="text-gray-400 hover:text-white transition-colors">
+                  Tin tức
+                </NuxtLink>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Support -->
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Hỗ trợ</h3>
+            <ul class="space-y-2">
+              <li>
+                <NuxtLink to="/faq" class="text-gray-400 hover:text-white transition-colors">
+                  FAQ
+                </NuxtLink>
+              </li>
+              <li>
+                <NuxtLink to="/terms" class="text-gray-400 hover:text-white transition-colors">
+                  Điều khoản sử dụng
+                </NuxtLink>
+              </li>
+              <li>
+                <NuxtLink to="/privacy" class="text-gray-400 hover:text-white transition-colors">
+                  Chính sách bảo mật
+                </NuxtLink>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Liên hệ</h3>
+            <ul class="space-y-2 text-gray-400">
+              <li>📍 123 Đường ABC, Quận 1, TP.HCM</li>
+              <li>📞 1900 1234</li>
+              <li>✉️ support@batdongsan.com</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
+          <p>2024 BatDongSan. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 const authStore = useAuthStore()
-const { isAuthenticated, user } = authStore
+
+const showMobileMenu = ref(false)
+const showUserMenu = ref(false)
+
+const isAuthenticated = computed(() => authStore.isAuthenticated)
+const user = computed(() => authStore.user)
+
+const toggleMobileMenu = () => {
+  showMobileMenu.value = !showMobileMenu.value
+}
+
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value
+}
+
+const closeUserMenu = () => {
+  showUserMenu.value = false
+}
+
+const navigateToLogin = () => {
+  router.push('/login')
+}
 
 const handleLogout = async () => {
   try {
     await authStore.handleLogout()
-    navigateTo('/login')
+    router.push('/login')
   } catch (error) {
-    console.error('Logout failed:', error)
+    console.error('Error logging out:', error)
   }
 }
+
+// Close menus when route changes
+watch(
+  () => router.currentRoute.value,
+  () => {
+    showMobileMenu.value = false
+    showUserMenu.value = false
+  }
+)
 </script>
+
+<style>
+.router-link-active {
+  color: #2563eb; /* blue-600 */
+}
+</style>
