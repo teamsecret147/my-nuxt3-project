@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(uuid())
+  id              String    @id @default(cuid())
   email           String    @unique
   password        String?
   name            String?
@@ -27,6 +27,8 @@ model User {
   updatedAt       DateTime  @updatedAt
   accounts        Account[]
   sessions        Session[]
+  properties      Property[]
+  role            String    @default("user")
 }
 
 model Account {
@@ -54,4 +56,29 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        String   // 'sale' | 'rent'
+  price       Float
+  area        Float
+  address     String
+  location    Json     // { lat: number, lng: number }
+  images      String[]
+  bedrooms    Int
+  bathrooms   Int
+  parking     Int
+  amenities   String[]
+  property360Url String?
+  isFeatured  Boolean  @default(false)
+  status      String   // 'active' | 'pending' | 'sold' | 'rented'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
