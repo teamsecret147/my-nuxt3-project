@@ -1,0 +1,32 @@
+module.exports = {
+  root: true,
+  env: {
+    browser: true,
+    node: true,
+  },
+  extends: [
+    'plugin:vue/vue3-recommended',
+    '@nuxtjs/eslint-config-typescript',
+    'plugin:prettier/recommended',
+  ],
+  plugins: ['prettier'],
+  rules: {
+    'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    'vue/multi-word-component-names': 'off',
+    'import/no-named-as-default': 0,
+    'no-undefined': 'warn',
+    'no-eq-null': 'warn',
+    '@typescript-eslint/no-unused-vars': 'warn',
+    eqeqeq: 'warn',
+    'array-callback-return': 'warn',
+    'no-case-declarations': 'warn',
+    'require-await': 'warn',
+    '@typescript-eslint/no-non-null-asserted-optional-chain': 'warn',
+    'vue/no-parsing-error': 'warn',
+    'no-use-before-define': 'warn',
+    'prefer-const': 'warn',
+    'vue/no-ref-as-operand': 'warn',
+    'no-empty': 'warn',
+    'import/order': 'warn',
+  },
+}
